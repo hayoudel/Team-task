@@ -1,0 +1,22 @@
+{
+  "name": "team-task",
+  "version": "1.0.0",
+  "description": "L'objectif de ce projet est de concevoir et de développer une application  Web  permettant d'optimiser le suivi des tâches, de gérer la charge de travail et d'assurer une communication fluide au sein d'une équipe pluridisciplinaire. L'application intègrera également des fonctionnalités de suivi d'activité technique grâce aux webhooks Git.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node backend/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pg": "^8.23.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.8",
+    "sqlite3": "^6.0.1"
+  }
+}
