@@ -1,12 +1,17 @@
 import express from 'express';
 import userRoutes from './routes/userRoutes.js';
+import projectRoutes from './routes/projectRoutes.js'
 
 import { connectionDb,sequelize } from './config/db.js';
 
 const app = express();
 
 app.use(express.json());
+
 app.use("/api/users", userRoutes);
+app.use("/api/projects",projectRoutes)
+
+
 const PORT = process.env.PORT || 5000;
 
 const connecte = async () => {

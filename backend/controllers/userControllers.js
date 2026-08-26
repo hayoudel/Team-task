@@ -34,7 +34,7 @@ export const getAllUsersController = async (req, res) => {
 export const getUserByIdController = async (req, res) => {
     try {
         const user = await getUserById(req.params.id);
-        
+
         if (!user) {
       return res.status(404).json({
         message: "Utilisateur non trouvé"
@@ -133,7 +133,7 @@ export const deleteUserController = async (req,res) => {
         role: user.role
       }
     });
-        
+
     }catch (error) {
         res.status (500).json({
             messsage: error.message,
