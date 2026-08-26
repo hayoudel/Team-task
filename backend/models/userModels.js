@@ -43,6 +43,16 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING(255),
     allowNull: false,
   },
+numero_telephone: {
+  type: DataTypes.STRING(20),
+  allowNull: false,
+  unique: true,
+  validate: {
+    notEmpty: {
+      msg: "Le numéro est obligatoire"
+    }
+  }
+},
 
  role: {
   type: DataTypes.STRING(50),
