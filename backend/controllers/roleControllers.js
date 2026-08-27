@@ -9,7 +9,7 @@ export const createRoleController = async (req,res) => {
         });
     }catch(error){
         res.status(500).json({
-            message: message.error,
+            message: error.message,
         })
     }
 
@@ -78,7 +78,7 @@ export const updateRoleController = async (req,res) => {
 
       res.status(200).json({
         message: "Role modifié",
-        user: roleUpdate,
+        role: roleUpdate,
 
       })
     }catch (error) {
