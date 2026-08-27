@@ -2,6 +2,7 @@ import ProjectUser from "../models/projectUserModels.js";
 import Project from "../models/projetModels.js";
 import User from "../models/userModels.js";
 import Role from "../models/roleModels.js";
+import Task from "../models/taskModels.js";
 
 
 User.hasMany(ProjectUser, {
@@ -31,4 +32,22 @@ Role.hasMany(ProjectUser, {
 ProjectUser.belongsTo(Role, {
   foreignKey: "role_id",
    onDelete: 'RESTRICT'
+});
+
+Project.hasMany(Task, {
+   foreignKey: "project_id", 
+});
+
+Task.belongsTo(Project, { 
+  foreignKey: "project_id", 
+  onDelete: "CASCADE", 
+}); 
+
+User.hasMany(Task, {
+   foreignKey: "users_id", 
+});
+
+Task.belongsTo(User, { 
+  foreignKey: "users_id", 
+  onDelete: "RESTRICT", 
 });

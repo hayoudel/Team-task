@@ -3,6 +3,7 @@ import userRoutes from './routes/userRoutes.js';
 import projectRoutes from './routes/projectRoutes.js'
 import roleRoutes from './routes/roleRoutes.js';
 import projectUserRoutes from "./routes/projectUserRoutes.js";
+import taskRoutes from "./routes/taskRoutes.js";
 import "./models/relationModels.js";
 
 import { connectionDb,sequelize } from './config/db.js';
@@ -15,6 +16,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/projects",projectRoutes);
 app.use("/api/roles",roleRoutes);
 app.use("/api/projectUser",projectUserRoutes);
+app.use("/api/task",taskRoutes)
 
 
 const PORT = process.env.PORT || 5000;
