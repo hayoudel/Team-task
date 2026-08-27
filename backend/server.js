@@ -1,7 +1,9 @@
 import express from 'express';
 import userRoutes from './routes/userRoutes.js';
 import projectRoutes from './routes/projectRoutes.js'
-import roleRoutes from './routes/roleRoutes.js'
+import roleRoutes from './routes/roleRoutes.js';
+import projectUserRoutes from "./routes/projectUserRoutes.js";
+import "./models/relationModels.js";
 
 import { connectionDb,sequelize } from './config/db.js';
 
@@ -12,6 +14,7 @@ app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/projects",projectRoutes);
 app.use("/api/roles",roleRoutes);
+app.use("/api/projectUser",projectUserRoutes);
 
 
 const PORT = process.env.PORT || 5000;
