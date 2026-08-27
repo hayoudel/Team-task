@@ -121,10 +121,16 @@ export const deleteUserController = async (req,res) => {
       });
     }
     const { user, token } = result;
+    
+    res.cookie("token", token, { 
+      httpOnly: true,
+      secure: false, 
+      sameSite: "lax", 
+      maxAge: 2 * 60 * 60 * 1000 
+    });
 
     res.status(200).json({
       message: "Connexion réussie",
-      token,
       user: {
         id: user.id,
         nom: user.nom,

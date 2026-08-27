@@ -5,12 +5,14 @@ import roleRoutes from './routes/roleRoutes.js';
 import projectUserRoutes from "./routes/projectUserRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
 import "./models/relationModels.js";
+import cookieParser from "cookie-parser";
 
 import { connectionDb,sequelize } from './config/db.js';
 
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.use("/api/users", userRoutes);
 app.use("/api/projects",projectRoutes);
