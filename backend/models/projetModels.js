@@ -27,6 +27,16 @@ const Projet = sequelize.define("project", {
       },
     },
   },
+  statut: {
+    type:DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: "mettez un statut",
+      },
+    },
+
+  },
   date_debut: {
     type: DataTypes.DATE,
     allowNull: false,
