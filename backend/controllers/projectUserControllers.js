@@ -1,4 +1,4 @@
-import { createProjectUser, getAllProjectUsers, getProjectUserById, updateProjectUser, deleteProjectUser
+import { createProjectUser, getAllProjectUsers, getProjectUserById, updateProjectUser, deleteProjectUser,getProjectMembers
 } from "../services/projectUserServices.js";
 
 
@@ -110,5 +110,30 @@ export const deleteProjectUserController = async (req, res) => {
     res.status(500).json({
       message: error.message
     });
+  }
+};
+export const getProjectMembersController = async (req, res) => {
+  try {
+
+    const result = await getProjectMembers(req.params.projectId);
+
+    if (!result) {
+      return res.status(404).json({
+        message: "Projet non trouvé"
+      });
+    }
+
+    res.status(200).json({
+      message: "Membres du projet récupérés avec succès",
+      project: result.project,
+      members: result.members
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
   }
 };

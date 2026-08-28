@@ -56,16 +56,25 @@ const Task = sequelize.define("task", {
     references: {
       model: "projects",
       key: "id"
-    },
+    }
   },
 
-  users_id: {
+  created_by: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
       model: "Users",
       key: "id"
-    },
+    }
+  },
+
+  responsable_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: "Users",
+      key: "id"
+    }
   }
 
 });

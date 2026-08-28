@@ -1,14 +1,19 @@
-import {createTask,getAllTasks, getTaskById, updateTask,deleteTask } from "../services/taskServices.js";
+import {createTask,getAllTasks, getTaskById, updateTask,deleteTask,getTasksByProject } from "../services/taskServices.js";
 
 
 export const createTaskController = async (req, res) => {
   try {
-    const task = await createTask(req.body);
+  
+    const task = await createTask(
+  req.body,
+  req.user.userId
+  );
 
     res.status(201).json({
-      message: "Tâche créée avec succès",
+      message: "Tâche créée ",
       task
     });
+    
 
   } catch (error) {
     res.status(500).json({
@@ -23,7 +28,7 @@ export const getAllTasksController = async (req, res) => {
     const tasks = await getAllTasks();
 
     res.status(200).json({
-      message: "Tâches récupérées avec succès",
+      message: "Tâches récupérées ",
       tasks
     });
 
@@ -46,7 +51,7 @@ export const getTaskByIdController = async (req, res) => {
     }
 
     res.status(200).json({
-      message: "Tâche récupérée avec succès",
+      message: "Tâche récupérée ",
       task
     });
 
@@ -79,7 +84,7 @@ export const updateTaskController = async (req, res) => {
     }
 
     res.status(200).json({
-      message: "Tâche modifiée avec succès",
+      message: "Tâche modifiée ",
       task: taskUpdate
     });
 
@@ -102,7 +107,7 @@ export const deleteTaskController = async (req, res) => {
     }
 
     res.status(200).json({
-      message: "Tâche supprimée avec succès"
+      message: "Tâche supprimée "
     });
 
   } catch (error) {
@@ -112,3 +117,21 @@ export const deleteTaskController = async (req, res) => {
   }
 };
 
+export const getTasksByProjectController = async (req, res) => {
+  try {
+
+    const tasks = await getTasksByProject(req.params.projectId);
+
+    res.status(200).json({
+      message: "Tâches du projet récupérées ",
+      tasks
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};

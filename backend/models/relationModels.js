@@ -44,10 +44,24 @@ Task.belongsTo(Project, {
 }); 
 
 User.hasMany(Task, {
-   foreignKey: "users_id", 
+  foreignKey: "created_by",
+  as: "tasksCreated"
 });
 
-Task.belongsTo(User, { 
-  foreignKey: "users_id", 
-  onDelete: "RESTRICT", 
+Task.belongsTo(User, {
+  foreignKey: "created_by",
+  as: "creator",
+  onDelete: "RESTRICT"
+});
+
+
+User.hasMany(Task, {
+  foreignKey: "responsable_id",
+  as: "tasksAssigned"
+});
+
+Task.belongsTo(User, {
+  foreignKey: "responsable_id",
+  as: "responsable",
+  onDelete: "RESTRICT"
 });
