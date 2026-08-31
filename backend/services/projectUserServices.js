@@ -3,11 +3,7 @@ import Project from "../models/projetModels.js";
 import User from "../models/userModels.js";
 import Role from "../models/roleModels.js";
 
-export const createProjectUser = async (projectUserData) => {
-  const projectUser = await ProjectUser.create(projectUserData);
 
-  return projectUser;
-};
 
 export const getAllProjectUsers = async () => {
   const projectUsers = await ProjectUser.findAll();
@@ -83,4 +79,76 @@ export const getProjectMembers = async (projectId) => {
       role: member.role.nom
         }))
   };
+};
+export const addMembersToProject = async (projectId, members) => {
+
+  const project = await Project.findByPk(projectId);
+
+  if (!project) {
+    return {
+      error: "Projet non trouvé"
+    };
+  }
+
+  for (const member of members) {
+
+    const user = await User.findByPk(member.users_id);
+
+    if (!user) {
+      return {
+        error: `L'utilisateur ${member.users_id} n'existe pas`
+      };
+    }
+
+    const role = await Role.findByPk(member.role_id);
+
+    if (!role) {
+      return {
+        error: `Le rôle ${member.role_id} n'existe pas`
+      };
+    }
+
+    const alreadyMember = await ProjectUser.findOne({
+      where: {
+        project_id: projectId,
+        users_id: member.users_id
+      }
+    });
+
+    if (alreadyMember) {
+      return {
+        error: `L'utilisateur ${member.users_id} est déjà membre de ce projet`
+      };
+    }
+  }
+
+  const projectUsers = await ProjectUser.bulkCreate(
+    members.map(member => ({
+      project_id: projectId,
+      users_id: member.users_id,
+      role_id: member.role_id
+    }))
+  );
+
+  return {
+    projectUsers
+  };
+};
+
+export const removeMemberFromProject = async (projectId, userId) => {
+
+  const member = await ProjectUser.findOne({
+    where: {
+      project_id: projectId,
+      users_id: userId
+    }
+  });
+
+  if (!member) {
+    return null;
+  }
+
+  await member.destroy();
+
+  return member;
 };

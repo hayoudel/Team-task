@@ -1,22 +1,8 @@
-import { createProjectUser, getAllProjectUsers, getProjectUserById, updateProjectUser, deleteProjectUser,getProjectMembers
+import {  getAllProjectUsers, getProjectUserById, updateProjectUser, deleteProjectUser,getProjectMembers,addMembersToProject,removeMemberFromProject
 } from "../services/projectUserServices.js";
 
 
-export const createProjectUserController = async (req, res) => {
-  try {
-    const projectUser = await createProjectUser(req.body);
 
-    res.status(201).json({
-      message: "Utilisateur ajouté au projet avec succès",
-      projectUser
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      message: error.message
-    });
-  }
-};
 
 
 export const getAllProjectUsersController = async (req, res) => {
@@ -127,6 +113,72 @@ export const getProjectMembersController = async (req, res) => {
       message: "Membres du projet récupérés avec succès",
       project: result.project,
       members: result.members
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
+export const addMembersToProjectController = async (req, res) => {
+
+  try {
+
+    const { project_id, members } = req.body;
+       console.log("BODY :", req.body);
+
+    if (!project_id || !members || !Array.isArray(members)) {
+      return res.status(400).json({
+        message: "project_id et members sont obligatoires"
+      });
+    }
+
+    const result = await addMembersToProject(
+      project_id,
+      members
+    );
+
+    if (result.error) {
+      return res.status(400).json({
+        message: result.error
+      });
+    }
+
+    res.status(201).json({
+      message: "Membres ajoutés au projet avec succès",
+      members: result.projectUsers
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
+export const removeMemberFromProjectController = async (req, res) => {
+
+  try {
+
+    const { projectId, userId } = req.params;
+
+    const member = await removeMemberFromProject(
+      projectId,
+      userId
+    );
+
+    if (!member) {
+      return res.status(404).json({
+        message: "Cet utilisateur n'est pas membre de ce projet"
+      });
+    }
+
+    res.status(200).json({
+      message: "Utilisateur retiré du projet avec succès"
     });
 
   } catch (error) {

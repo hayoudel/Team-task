@@ -1,16 +1,19 @@
 import express from "express";
 
-import {createProjectUserController,getAllProjectUsersController,getProjectUserByIdController, updateProjectUserController,deleteProjectUserController,getProjectMembersController
+import {getAllProjectUsersController,getProjectUserByIdController, updateProjectUserController,deleteProjectUserController,getProjectMembersController,addMembersToProjectController,removeMemberFromProjectController
 } from "../controllers/projectUserControllers.js";
-
+import { verifyToken } from "../middlewares/authMiddleware.js";
+import { isAdmin } from "../middlewares/isAdminMiddleware.js";
 const router = express.Router();
 
-router.post("/", createProjectUserController);
-router.get("/", getAllProjectUsersController);
-router.get("/:id", getProjectUserByIdController);
+
+router.get("/",verifyToken,isAdmin, getAllProjectUsersController);
+router.get("/:id",verifyToken,isAdmin, getProjectUserByIdController);
 router.put("/:id", updateProjectUserController);
 router.delete("/:id", deleteProjectUserController);
-router.get("/project/:projectId",getProjectMembersController
-);
+router.get("/project/:projectId",getProjectMembersController);
+router.post("/",verifyToken,isAdmin,addMembersToProjectController);
+router.delete( "/project/:projectId/user/:userId",verifyToken,isAdmin,removeMemberFromProjectController);
+
 
 export default router;
