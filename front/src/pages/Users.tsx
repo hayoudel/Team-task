@@ -10,8 +10,14 @@ import type { User, UserRole } from "../types";
 
 const PAGE_SIZE = 8;
 
-const emptyForm = { firstName: "", lastName: "", email: "", phone: "", role: "user" as UserRole };
-
+const emptyForm = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  password: "",
+  role: "user" as UserRole
+};
 export function Users() {
   const { users, addUser, updateUser, deleteUser } = useApp();
   const [search, setSearch] = useState("");
@@ -94,7 +100,6 @@ export function Users() {
               <td className="px-4 py-3">
                 <RoleBadge role={u.role} />
               </td>
-              <td className="px-4 py-3 text-sm text-slate-500">{formatDate(u.createdAt)}</td>
               <td className="px-4 py-3">
                 <div className="flex items-center justify-end gap-1 opacity-50 group-hover:opacity-100 transition-opacity">
                   <IconBtn onClick={() => setViewUser(u)} title="Voir">
@@ -132,14 +137,12 @@ export function Users() {
                 <p className="text-xs text-slate-400 mb-0.5">Email</p>
                 <p className="text-sm text-slate-800">{viewUser.email}</p>
               </div>
+          
               <div className="bg-slate-50 rounded-lg px-4 py-3">
                 <p className="text-xs text-slate-400 mb-0.5">Téléphone</p>
                 <p className="text-sm text-slate-800">{viewUser.phone}</p>
               </div>
-              <div className="bg-slate-50 rounded-lg px-4 py-3">
-                <p className="text-xs text-slate-400 mb-0.5">Date d'inscription</p>
-                <p className="text-sm text-slate-800">{formatDate(viewUser.createdAt)}</p>
-              </div>
+
             </div>
           </div>
         )}
@@ -165,6 +168,7 @@ export function Users() {
             <Input label="Nom" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} />
           </div>
           <Input label="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+          <Input label="Mot de passe " type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
           <Input label="Téléphone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
           <Select
             label="Rôle système"
@@ -172,7 +176,6 @@ export function Users() {
             onChange={(e) => setForm({ ...form, role: e.target.value as UserRole })}
             options={[
               { value: "admin", label: roleLabel("admin") },
-              { value: "chef_projet", label: roleLabel("chef_projet") },
               { value: "user", label: roleLabel("user") },
             ]}
           />

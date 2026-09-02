@@ -20,7 +20,12 @@ export const createUser = async (userData) => {
 };
 
 export const getAllUsers = async () => {
-  const users = await User.findAll();
+  const users = await User.findAll({
+    attributes: {
+      exclude: ["motDePasse"]
+    }
+  });
+
   return users;
 };
 

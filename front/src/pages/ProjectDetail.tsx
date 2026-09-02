@@ -35,7 +35,12 @@ export function ProjectDetail() {
   const [showEditProject, setShowEditProject] = useState(false);
   const [showDeleteProject, setShowDeleteProject] = useState(false);
   const [showAddMember, setShowAddMember] = useState(false);
-  const [memberForm, setMemberForm] = useState({ userId: "", projectRole: "" });
+const [memberForm, setMemberForm] = useState({
+  id:"",
+  userId: "",
+  roleId: "",
+  projectRole: "",
+});
   const [removeMemberTarget, setRemoveMemberTarget] = useState<string | null>(null);
 
   const [taskSearch, setTaskSearch] = useState("");
@@ -89,15 +94,33 @@ export function ProjectDetail() {
   };
   const openTaskEdit = (t: Task) => {
     setEditTask(t);
-    setTaskForm({ name: t.name, description: t.description, status: t.status, startDate: t.startDate, dueDate: t.dueDate, assigneeId: t.assigneeId });
+    setTaskForm({ name: t.name, description: t.description, status: t.status, startDate: formatDateForInput(t.startDate), dueDate: formatDateForInput(t.dueDate), assigneeId: t.assigneeId });
     setShowTaskForm(true);
   };
-  const submitTask = () => {
-    if (!taskForm.name || !taskForm.assigneeId) return;
-    if (editTask) updateTask(editTask.id, taskForm);
-    else addTask({ ...taskForm, projectId: project.id });
+  const formatDateForInput = (date: string) => {
+  if (!date) return "";
+
+  return date.slice(0, 10);
+};
+const submitTask = async () => {
+  if (!taskForm.name || !taskForm.assigneeId) return;
+
+  try {
+    if (editTask) {
+      await updateTask(editTask.id, taskForm);
+    } else {
+      await addTask({
+        ...taskForm,
+        projectId: project.id,
+      });
+    }
+
     setShowTaskForm(false);
-  };
+
+  } catch (error) {
+    console.error("Erreur tâche :", error);
+  }
+};
 
   const doneCount = projectTasks.filter((t) => t.status === "done").length;
   const progress = projectProgress(tasks, project.id);
@@ -125,16 +148,21 @@ export function ProjectDetail() {
               variant="secondary"
               size="sm"
               icon={<Pencil className="w-3.5 h-3.5" />}
-              onClick={() => {
-                setEditProjectForm({
-                  name: project.name,
-                  description: project.description,
-                  status: project.status,
-                  startDate: project.startDate,
-                  endDate: project.endDate,
-                });
-                setShowEditProject(true);
-              }}
+             onClick={() => {
+  setEditProjectForm({
+    name: project.name,
+    description: project.description,
+    status: project.status,
+    startDate: project.startDate
+      ? project.startDate.slice(0, 10)
+      : "",
+    endDate: project.endDate
+      ? project.endDate.slice(0, 10)
+      : "",
+  });
+
+  setShowEditProject(true);
+}}
             >
               Modifier
             </Button>
@@ -198,7 +226,16 @@ export function ProjectDetail() {
         <Card className="p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-slate-900">Membres du projet</h3>
-            <Button size="sm" icon={<Plus className="w-4 h-4" />} onClick={() => { setMemberForm({ userId: "", projectRole: "" }); setShowAddMember(true); }}>
+            <Button size="sm" icon={<Plus className="w-4 h-4" />} onClick={() => {
+  setMemberForm({
+    id:"",
+    userId: "",
+    roleId: "",
+    projectRole: "",
+  });
+
+  setShowAddMember(true);
+}}>
               Ajouter un membre
             </Button>
           </div>
@@ -378,36 +415,77 @@ export function ProjectDetail() {
         title="Ajouter un membre"
         footer={
           <>
-            <Button variant="outline" onClick={() => setShowAddMember(false)}>
-              Annuler
-            </Button>
-            <Button
-              onClick={() => {
-                if (!memberForm.userId || !memberForm.projectRole) return;
-                addMember(project.id, memberForm);
-                setShowAddMember(false);
-              }}
-            >
-              Ajouter
-            </Button>
+     <Button
+  onClick={async () => {
+
+
+    if (!memberForm.userId || !memberForm.roleId) {
+   
+      return;
+    }
+
+    try {
+
+      await addMember(project.id, memberForm);
+
+      setMemberForm({
+        id: "",
+        userId: "",
+        roleId: "",
+        projectRole: "",
+      });
+
+      setShowAddMember(false);
+
+    } catch (error) {
+      console.error("Erreur ajout membre :", error);
+    }
+  }}
+>
+  Ajouter
+</Button>
+
           </>
         }
       >
         <div className="space-y-4">
           <Select
-            label="Utilisateur"
-            placeholder="Sélectionner un utilisateur"
-            value={memberForm.userId}
-            onChange={(e) => setMemberForm({ ...memberForm, userId: e.target.value })}
-            options={nonMembers.map((u) => ({ value: u.id, label: `${u.firstName} ${u.lastName}` }))}
-          />
-          <Select
-            label="Rôle dans le projet"
-            placeholder="Sélectionner un rôle"
-            value={memberForm.projectRole}
-            onChange={(e) => setMemberForm({ ...memberForm, projectRole: e.target.value })}
-            options={roles.map((r) => ({ value: r.name, label: r.name }))}
-          />
+  label="Utilisateur"
+  placeholder="Sélectionner un utilisateur"
+  value={memberForm.userId}
+  onChange={(e) =>
+    setMemberForm({
+      ...memberForm,
+      userId: e.target.value,
+    })
+  }
+  options={nonMembers.map((u) => ({
+    value: u.id,
+    label: `${u.firstName} ${u.lastName}`,
+  }))}
+/>
+       <Select
+  label="Rôle dans le projet"
+  placeholder="Sélectionner un rôle"
+  value={memberForm.roleId}
+  onChange={(e) => {
+    const roleId = e.target.value;
+
+    const selectedRole = roles.find(
+      (r) => String(r.id) === roleId
+    );
+
+    setMemberForm({
+      ...memberForm,
+      roleId: roleId,
+      projectRole: selectedRole?.name ?? "",
+    });
+  }}
+  options={roles.map((r) => ({
+    value: String(r.id),
+    label: r.name,
+  }))}
+/>
         </div>
       </Modal>
 
@@ -456,14 +534,23 @@ export function ProjectDetail() {
           </div>
         </div>
       </Modal>
+<ConfirmModal
+  open={!!deleteTaskTarget}
+  onClose={() => setDeleteTaskTarget(null)}
+  onConfirm={async () => {
+    if (!deleteTaskTarget) return;
 
-      <ConfirmModal
-        open={!!deleteTaskTarget}
-        onClose={() => setDeleteTaskTarget(null)}
-        onConfirm={() => deleteTaskTarget && deleteTask(deleteTaskTarget.id)}
-        title="Supprimer cette tâche ?"
-        description={`La tâche "${deleteTaskTarget?.name}" sera définitivement supprimée.`}
-      />
+    try {
+      await deleteTask(deleteTaskTarget.id);
+      setDeleteTaskTarget(null);
+    } catch (error) {
+      console.error("Erreur suppression tâche :", error);
+    }
+  }}
+  title="Supprimer cette tâche ?"
+  description={`La tâche "${deleteTaskTarget?.name}" sera définitivement supprimée.`}
+/>
+     
     </div>
   );
 }

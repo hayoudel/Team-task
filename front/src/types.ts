@@ -7,15 +7,18 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
+  phone?: string;
   role: UserRole;
-  createdAt: string;
 }
 
-export interface ProjectMember {
-  userId: string;
-  projectRole: string;
-}
+export interface CreateUserData  {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  password: string;
+  role: UserRole;
+};
 
 export interface Project {
   id: string;
@@ -27,6 +30,12 @@ export interface Project {
   members: ProjectMember[];
   createdAt: string;
   createdBy: string;
+}
+export interface ProjectMember {
+  id: String;
+  userId: string;
+  roleId: string;
+  projectRole: string;
 }
 
 export interface Task {

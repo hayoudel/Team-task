@@ -1,4 +1,4 @@
-import {  getAllProjectUsers, getProjectUserById, updateProjectUser, deleteProjectUser,getProjectMembers,addMembersToProject,removeMemberFromProject
+import {  getAllProjectUsers, getProjectById,getProjectUserById, updateProjectUser, deleteProjectUser,getProjectMembers,addMembersToProject,removeMemberFromProject
 } from "../services/projectUserServices.js";
 
 
@@ -22,9 +22,9 @@ export const getAllProjectUsersController = async (req, res) => {
 };
 
 
-export const getProjectUserByIdController = async (req, res) => {
+export const getProjectByIdController = async (req, res) => {
   try {
-    const projectUser = await getProjectUserById(req.params.id);
+    const projectUser = await getProjectById(req.params.id);
 
     if (!projectUser) {
       return res.status(404).json({
@@ -43,7 +43,29 @@ export const getProjectUserByIdController = async (req, res) => {
     });
   }
 };
+export const getProjectUserByIdController = async (req, res) => {
+  try {
+    const projects = await getProjectUserById(req.params.userId);
 
+    if (!projects || projects.length === 0) {
+      return res.status(404).json({
+        message: "Cet utilisateur n'appartient à aucun projet",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Projets de l'utilisateur récupérés avec succès",
+      project: projects,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
+};
 
 export const updateProjectUserController = async (req, res) => {
   try {

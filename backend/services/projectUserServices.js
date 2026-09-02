@@ -11,7 +11,7 @@ export const getAllProjectUsers = async () => {
   return projectUsers;
 };
 
-export const getProjectUserById = async (id) => {
+export const getProjectById = async (id) => {
   const projectUser = await ProjectUser.findByPk(id);
 
   if (!projectUser) {
@@ -20,7 +20,20 @@ export const getProjectUserById = async (id) => {
 
   return projectUser;
 };
+export const getProjectUserById = async (userId) => {
+  const projectUsers = await ProjectUser.findAll({
+    where: {
+      users_id: userId,
+    },
+    include: [
+      {
+        model: Project,
+      },
+    ],
+  });
 
+return projectUsers.map((projectUser) => projectUser.project)
+};
 export const updateProjectUser = async (id, projectUserData) => {
   const projectUser = await ProjectUser.findByPk(id);
 
@@ -62,23 +75,26 @@ export const getProjectMembers = async (projectId) => {
     include: [
       {
         model: User,
-        attributes: ["nom", "prenom"]
+        attributes: ["id","nom", "prenom"]
       },
       {
         model: Role,
-        attributes: ["nom"]
+        attributes: ["id","nom"]
       }
     ]
   });
 
-  return {
-    project,
-    members: members.map(member => ({
-      nom: member.User.nom,
-      prenom: member.User.prenom,
-      role: member.role.nom
-        }))
-  };
+ return {
+  project,
+  members: members.map(member => ({
+    id: String(member.id),
+    userId: String(member.users_id),
+    roleId: String(member.role_id),
+    nom: member.User.nom,
+    prenom: member.User.prenom,
+    role: member.role.nom
+  }))
+};
 };
 export const addMembersToProject = async (projectId, members) => {
 

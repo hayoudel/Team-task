@@ -1,5 +1,5 @@
-import { and } from "sequelize";
 import { createUser,getAllUsers,getUserById,updateUser,deleteUser,loginUser } from "../services/userServices.js";
+import  User from "../models/userModels.js";
 
 export const createUserController = async (req, res) => {
   try {
@@ -7,7 +7,14 @@ export const createUserController = async (req, res) => {
 
     res.status(201).json({
       message: "Utilisateur créé avec succès",
-      user,
+      user: {
+        id: user.id,
+        nom: user.nom,
+        prenom: user.prenom,
+        email: user.email,
+        numero_telephone:user.numero_telephone,
+        role: user.role
+      }
     });
 
   } catch (error) {
@@ -132,6 +139,7 @@ export const deleteUserController = async (req,res) => {
     res.status(200).json({
       message: "Connexion réussie",
       user: {
+        token,
         id: user.id,
         nom: user.nom,
         prenom: user.prenom,
@@ -147,3 +155,42 @@ export const deleteUserController = async (req,res) => {
 
     }
  };
+
+export const getMeController = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Utilisateur introuvable"
+      });
+    }
+
+    res.status(200).json({
+      user: {
+        id: user.id,
+        nom: user.nom,
+        prenom: user.prenom,
+        email: user.email,
+        role: user.role
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+export const logoutController = (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+     path: "/",
+  });
+
+  res.status(200).json({
+    message: "Déconnexion réussie"
+  });
+};

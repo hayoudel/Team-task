@@ -7,9 +7,10 @@ const router = express.Router();
 
 router.post("/",verifyToken, canCreateTask,createTaskController);
 router.get("/", getAllTasksController);
+router.get("/project/:projectId",verifyToken,getTasksByProjectController);
 router.get("/:id", getTaskByIdController);
 router.put("/:id", verifyToken, canManageTask, updateTaskController);
 router.delete("/:id", verifyToken, canManageTask, deleteTaskController);
-router.get("/project/:projectId",verifyToken,getTasksByProjectController);
+
 
 export default router;

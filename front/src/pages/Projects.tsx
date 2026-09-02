@@ -25,13 +25,20 @@ export function Projects() {
     cancelled: projects.filter((p) => p.status === "cancelled").length,
   };
 
-  const submit = () => {
-    if (!form.name) return;
-    const id = addProject(form);
+const submit = async () => {
+  if (!form.name) return;
+
+  try {
+    const id = await addProject(form);
+
     setShowForm(false);
     setForm(emptyForm);
+
     navigate(`/admin/project/${id}`);
-  };
+  } catch (error) {
+    console.error("Erreur création projet :", error);
+  }
+};
 
   return (
     <div className="space-y-6">

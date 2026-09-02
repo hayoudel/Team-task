@@ -13,19 +13,29 @@ const features = [
 ];
 
 export function Login() {
-  const { currentUser, login } = useApp();
+const { currentUser, isLoadingAuth, login } = useApp();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  if (currentUser) return <Navigate to="/admin/dashboard" replace />;
+if (isLoadingAuth) {
+  return <div>Chargement...</div>;
+}
 
-  const handleLogin = (loginEmail: string) => {
-    const ok = login(loginEmail);
-    if (ok) navigate("/admin/dashboard");
-    else setError("Aucun compte ne correspond à cet email.");
-  };
+if (currentUser) {
+  return <Navigate to="/admin/dashboard" replace />;
+}
+
+const handleLogin = async () => {
+  const ok = await login(email, password);
+
+  if (ok) {
+    navigate("/admin/dashboard");
+  } else {
+    setError("Email ou mot de passe incorrect.");
+  }
+};
 
   return (
     <div className="min-h-screen flex">
@@ -77,14 +87,15 @@ export function Login() {
 
           <form
             className="space-y-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleLogin(email);
-            }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleLogin();
+          }}
           >
             <Input
               label="Adresse email"
               type="email"
+
               placeholder="prenom.nom@teamtask.io"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
