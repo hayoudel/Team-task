@@ -45,9 +45,9 @@ export function Tasks() {
 
   const overdueCount = tasks.filter(isOverdue).length;
   const counts = {
-    todo: tasks.filter((t) => t.status === "todo").length,
-    in_progress: tasks.filter((t) => t.status === "in_progress").length,
-    done: tasks.filter((t) => t.status === "done").length,
+    todo: tasks.filter((t) => t.status === "A_faire").length,
+    in_progress: tasks.filter((t) => t.status === "En_cours").length,
+    done: tasks.filter((t) => t.status === "Terminée").length,
   };
 
   const projectMembers = (projectId: string) => {
@@ -100,7 +100,7 @@ export function Tasks() {
             value={statusFilter}
             onChange={setStatusFilter}
             placeholder="Tous les statuts"
-            options={(["todo", "in_progress", "done"] as TaskStatus[]).map((s) => ({ value: s, label: taskStatusLabel(s) }))}
+            options={(["A_faire", "En_cours", "Terminée"] as TaskStatus[]).map((s) => ({ value: s, label: taskStatusLabel(s) }))}
           />
           <FilterSelect value={assigneeFilter} onChange={setAssigneeFilter} placeholder="Tous les assignés" options={users.map((u) => ({ value: u.id, label: `${u.firstName} ${u.lastName}` }))} />
         </div>
@@ -189,7 +189,7 @@ export function Tasks() {
             label="Statut"
             value={form.status}
             onChange={(e) => setForm({ ...form, status: e.target.value as TaskStatus })}
-            options={(["todo", "in_progress", "done"] as TaskStatus[]).map((s) => ({ value: s, label: taskStatusLabel(s) }))}
+            options={(["A_faire", "En_cours", "Terminée"] as TaskStatus[]).map((s) => ({ value: s, label: taskStatusLabel(s) }))}
           />
           <Select
             label="Assigné à"

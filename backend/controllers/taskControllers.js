@@ -1,4 +1,4 @@
-import {createTask,getAllTasks, getTaskById, updateTask,deleteTask,getTasksByProject } from "../services/taskServices.js";
+import {createTask,getAllTasks, getTaskById, updateTask,deleteTask,getTasksByProject,updateTaskStatus,getMyTasks } from "../services/taskServices.js";
 
 
 export const createTaskController = async (req, res) => {
@@ -133,5 +133,61 @@ export const getTasksByProjectController = async (req, res) => {
       message: error.message
     });
 
+  }
+};
+
+export const updateTaskStatusController = async (req, res) => {
+  try {
+    const { statut } = req.body;
+
+    if (!statut) {
+      return res.status(400).json({
+        message: "Le statut est obligatoire"
+      });
+    }
+
+    const task = await updateTaskStatus(
+      req.params.id,
+      statut,
+      req.user.userId
+    );
+
+    if (!task) {
+      return res.status(404).json({
+        message: "Tâche non trouvée"
+      });
+    }
+
+    res.status(200).json({
+      message: "Statut de la tâche modifié",
+      task
+    });
+
+  } catch (error) {
+
+    if (error.statusCode === 403) {
+      return res.status(403).json({
+        message: error.message
+      });
+    }
+
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+export const getMyTasksController = async (req, res) => {
+  try {
+    const tasks = await getMyTasks(req.user.userId);
+
+    res.status(200).json({
+      message: "Mes tâches récupérées",
+      tasks
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
   }
 };

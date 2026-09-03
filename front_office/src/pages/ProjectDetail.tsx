@@ -9,6 +9,9 @@ import Avatar from "../components/ui/Avatar";
 import Tabs from "../components/ui/Tabs";
 import EmptyState from "../components/ui/EmptyState";
 import CreateTaskModal from "../components/CreateTaskModal";
+import EditTaskModal from "../components/EditTaskModal";
+import ViewTaskModal from "../components/ViewTaskModal";
+import type {Task,TaskCreated} from "../types/task";
 
 function statusStyle(statut: string) {
   const s = statut.toLowerCase();
@@ -36,6 +39,8 @@ export default function ProjectDetail() {
     fetchProjectMembers,
     projectTasks,
     tasksLoading,
+    updateTask,
+    updateTaskStatus,
     tasksError,
     fetchProjectTasks,
     deleteTask,
@@ -43,6 +48,8 @@ export default function ProjectDetail() {
 
   const [tab, setTab] = useState("Vue générale");
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+const [editTask, setEditTask] = useState<Task | null>(null);
 
   useEffect(() => {
     if (!projectId) return;
@@ -57,23 +64,21 @@ export default function ProjectDetail() {
   const isChefOnProject = myMembership?.roleId === CHEF_DE_PROJET_ROLE_ID;
   const canCreateAndAssign = isAdmin || isChefOnProject;
 
-  function canEditTask(createdBy: number) {
-    return isAdmin || createdBy === user?.id;
-  }
+ function canEditTask(createdBy: number) {
+  return isAdmin || createdBy === user?.id;
+}
+const myTasks = projectTasks.filter(
+  (task) => task.responsable_id === user?.id
+);
+async function handleTaskStatusChange(taskId: number, statut: string) {
+  await updateTaskStatus(taskId, statut);
+}
 
   async function handleDelete(taskId: number) {
     if (!window.confirm("Supprimer cette tâche ?")) return;
     await deleteTask(taskId);
   }
 
-  // Regroupement dynamique pour le kanban : le statut est du texte libre côté back,
-  // donc on affiche les colonnes réellement présentes plutôt que 3 colonnes figées.
-  const statusOrder = ["A faire", "En cours", "Terminé"];
-  const presentStatuses = Array.from(new Set(projectTasks.map((t) => t.statut)));
-  const kanbanColumns = [
-    ...statusOrder.filter((s) => presentStatuses.includes(s)),
-    ...presentStatuses.filter((s) => !statusOrder.includes(s)),
-  ];
 
   if (projectLoading) {
     return (
@@ -240,6 +245,7 @@ export default function ProjectDetail() {
                       <th className="text-left font-medium text-slate-500 px-5 py-3">Tâche</th>
                       <th className="text-left font-medium text-slate-500 px-5 py-3">Assigné</th>
                       <th className="text-left font-medium text-slate-500 px-5 py-3">Statut</th>
+                       <th className="text-left font-medium text-slate-500 px-5 py-3">Début</th>
                       <th className="text-left font-medium text-slate-500 px-5 py-3">Échéance</th>
                       <th className="text-right font-medium text-slate-500 px-5 py-3">Actions</th>
                     </tr>
@@ -266,22 +272,29 @@ export default function ProjectDetail() {
                               {t.statut}
                             </span>
                           </td>
+                          <td className="px-5 py-3.5 text-slate-500">{formatDate(t.date_debut)}</td>
                           <td className="px-5 py-3.5 text-slate-500">{formatDate(t.date_fin)}</td>
                           <td className="px-5 py-3.5">
                             <div className="flex items-center justify-end gap-2 opacity-50 group-hover:opacity-100 transition-all duration-200">
                               {canEdit ? (
                                 <>
-                                  <Link to={`/tasks/${t.id}`} className="text-slate-400 hover:text-orange-500">
-                                    <Pencil className="w-4 h-4" />
-                                  </Link>
+                                 <button
+      onClick={() => setEditTask(t)}
+      className="text-slate-400 hover:text-orange-500"
+    >
+      <Pencil className="w-4 h-4" />
+    </button>
                                   <button onClick={() => handleDelete(t.id)} className="text-slate-400 hover:text-red-500">
                                     <Trash2 className="w-4 h-4" />
                                   </button>
                                 </>
                               ) : (
-                                <Link to={`/tasks/${t.id}`} className="text-slate-400 hover:text-slate-600">
-                                  <Eye className="w-4 h-4" />
-                                </Link>
+                               <button
+  onClick={() => setSelectedTask(t)}
+  className="text-slate-400 hover:text-slate-600"
+>
+  <Eye className="w-4 h-4" />
+</button>
                               )}
                             </div>
                           </td>
@@ -293,53 +306,228 @@ export default function ProjectDetail() {
               )}
             </div>
           )}
+          {selectedTask && (
+  <ViewTaskModal
+    task={selectedTask}
+    onClose={() => setSelectedTask(null)}
+  />
+)}
         </div>
       )}
 
-      {tab === "Suivi" && (
-        <div>
-          {tasksLoading && <p className="text-sm text-slate-400">Chargement...</p>}
-          {!tasksLoading && projectTasks.length === 0 && (
-            <Card className="py-8">
-              <EmptyState title="Aucune tâche à suivre" description="Le suivi apparaîtra dès qu'une tâche sera créée." />
-            </Card>
-          )}
-          {!tasksLoading && projectTasks.length > 0 && (
-            <div
-              className="grid gap-4"
-              style={{ gridTemplateColumns: `repeat(${kanbanColumns.length}, minmax(0, 1fr))` }}
-            >
-              {kanbanColumns.map((col) => (
-                <div key={col} className="bg-slate-100/70 rounded-2xl p-3 space-y-3">
-                  <div className="flex items-center justify-between px-1">
-                    <p className="text-sm font-semibold text-slate-700">{col}</p>
-                    <span className="text-xs text-slate-400">
-                      {projectTasks.filter((t) => t.statut === col).length}
-                    </span>
-                  </div>
-                  {projectTasks
-                    .filter((t) => t.statut === col)
-                    .map((t) => (
-                      <Link key={t.id} to={`/tasks/${t.id}`}>
-                        <Card className="p-3 hover:shadow-lg transition-all duration-200">
-                          <p className="text-sm font-medium text-slate-900 mb-2">{t.nom}</p>
-                          <div className="flex items-center justify-between">
-                            {t.responsable ? (
-                              <Avatar name={`${t.responsable.prenom} ${t.responsable.nom}`} size="xs" />
-                            ) : (
-                              <span />
-                            )}
-                            <span className="text-xs text-slate-400">{formatDate(t.date_fin)}</span>
-                          </div>
-                        </Card>
-                      </Link>
-                    ))}
-                </div>
-              ))}
+ {tab === "Suivi" && (
+  <div className="space-y-4">
+
+    {/* Message si aucune tâche n'est attribuée à l'utilisateur */}
+    {!tasksLoading && myTasks.length === 0 && (
+      <Card className="py-8">
+        <EmptyState
+          title="Aucune tâche attribuée"
+          description="Les tâches qui vous sont attribuées apparaîtront ici."
+        />
+      </Card>
+    )}
+
+    {!tasksLoading && myTasks.length > 0 && (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        {/* ================= À FAIRE ================= */}
+        <div className="bg-slate-100/70 rounded-2xl p-3 space-y-3">
+
+          <div className="flex items-center justify-between px-1">
+            <div>
+              <p className="text-sm font-semibold text-slate-700">
+                À faire
+              </p>
+              <p className="text-xs text-slate-400">
+                Tâches à commencer
+              </p>
             </div>
-          )}
+
+            <span className="text-xs bg-white rounded-full px-2 py-1 text-slate-500">
+              {myTasks.filter((t) => t.statut === "A faire"|| t.statut === "todo"  ).length}
+            </span>
+          </div>
+
+          {myTasks
+            .filter((t) => t.statut === "A faire"||t.statut === "todo")
+            .map((task) => (
+              <Card
+                key={task.id}
+                className="p-4 space-y-3"
+              >
+                <div className="flex items-start justify-between gap-3">
+
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {task.nom}
+                    </p>
+
+                    <p className="text-xs text-slate-500 mt-1">
+                      {task.description}
+                    </p>
+                  </div>
+
+                </div>
+
+                <div className="flex items-center justify-between">
+
+                  <span className="text-xs text-slate-400">
+                    Échéance : {formatDate(task.date_fin)}
+                  </span>
+
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      handleTaskStatusChange(task.id, "En cours")
+                    }
+                  >
+                    Commencer
+                  </Button>
+
+                </div>
+              </Card>
+            ))}
+
         </div>
-      )}
+
+
+        {/* ================= EN COURS ================= */}
+        <div className="bg-blue-50/70 rounded-2xl p-3 space-y-3">
+
+          <div className="flex items-center justify-between px-1">
+            <div>
+              <p className="text-sm font-semibold text-blue-700">
+                En cours
+              </p>
+              <p className="text-xs text-blue-400">
+                Tâches actuellement en cours
+              </p>
+            </div>
+
+            <span className="text-xs bg-white rounded-full px-2 py-1 text-blue-500">
+              {myTasks.filter((t) => t.statut === "En cours").length}
+            </span>
+          </div>
+
+          {myTasks
+            .filter((t) => t.statut === "En cours")
+            .map((task) => (
+              <Card
+                key={task.id}
+                className="p-4 space-y-3"
+              >
+
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {task.nom}
+                  </p>
+
+                  <p className="text-xs text-slate-500 mt-1">
+                    {task.description}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between">
+
+                  <span className="text-xs text-slate-400">
+                    Échéance : {formatDate(task.date_fin)}
+                  </span>
+
+                  {/* CASE À COCHER */}
+                  <label className="flex items-center gap-2 cursor-pointer">
+
+                    <input
+                      type="checkbox"
+                      checked={false}
+                      onChange={() =>
+                        handleTaskStatusChange(task.id, "Terminé")
+                      }
+                      className="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
+                    />
+
+                    <span className="text-xs font-medium text-slate-600">
+                      Terminer
+                    </span>
+
+                  </label>
+
+                </div>
+
+              </Card>
+            ))}
+
+        </div>
+
+
+        {/* ================= TERMINÉES ================= */}
+        <div className="bg-emerald-50/70 rounded-2xl p-3 space-y-3">
+
+          <div className="flex items-center justify-between px-1">
+            <div>
+              <p className="text-sm font-semibold text-emerald-700">
+                Terminées
+              </p>
+              <p className="text-xs text-emerald-500">
+                Tâches terminées
+              </p>
+            </div>
+
+            <span className="text-xs bg-white rounded-full px-2 py-1 text-emerald-600">
+              {myTasks.filter((t) => t.statut === "Terminé").length}
+            </span>
+          </div>
+
+          {myTasks
+            .filter((t) => t.statut === "Terminé")
+            .map((task) => (
+              <Card
+                key={task.id}
+                className="p-4 space-y-3"
+              >
+
+                <div className="flex items-start gap-3">
+
+                  {/* CASE COCHÉE */}
+                  <input
+                    type="checkbox"
+                    checked={true}
+                    onChange={() =>
+                      handleTaskStatusChange(task.id, "En cours")
+                    }
+                    className="mt-1 w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
+                  />
+
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900 line-through">
+                      {task.nom}
+                    </p>
+
+                    <p className="text-xs text-slate-500 mt-1">
+                      {task.description}
+                    </p>
+                  </div>
+
+                </div>
+
+                <div className="flex justify-end">
+
+                  <span className="text-xs font-medium text-emerald-600">
+                    ✓ Terminée
+                  </span>
+
+                </div>
+
+              </Card>
+            ))}
+
+        </div>
+
+      </div>
+    )}
+
+  </div>
+)}
 
       {createModalOpen && currentProject && user && (
         <CreateTaskModal
@@ -350,6 +538,22 @@ export default function ProjectDetail() {
           onClose={() => setCreateModalOpen(false)}
         />
       )}
+      {editTask && user && (
+  <EditTaskModal
+    task={editTask}
+    members={projectMembers}
+    canAssignOthers={canCreateAndAssign}
+    currentUserId={user.id}
+    onClose={() => setEditTask(null)}
+    onUpdate={async (taskId, data) => {
+      await updateTask(taskId, data);
+
+      if (projectId) {
+        await fetchProjectTasks(projectId);
+      }
+    }}
+  />
+)}
     </div>
   );
 }

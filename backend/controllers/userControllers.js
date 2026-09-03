@@ -1,4 +1,4 @@
-import { createUser,getAllUsers,getUserById,updateUser,deleteUser,loginUser } from "../services/userServices.js";
+import { createUser,getAllUsers,getUserById,updateUser,deleteUser,loginUser,changePassword } from "../services/userServices.js";
 import  User from "../models/userModels.js";
 
 export const createUserController = async (req, res) => {
@@ -172,6 +172,7 @@ export const getMeController = async (req, res) => {
         nom: user.nom,
         prenom: user.prenom,
         email: user.email,
+        numero_telephone: user.numero_telephone,
         role: user.role
       }
     });
@@ -193,4 +194,42 @@ export const logoutController = (req, res) => {
   res.status(200).json({
     message: "Déconnexion réussie"
   });
+};
+export const changePasswordController = async (req, res) => {
+  try {
+    const { ancienMotDePasse, nouveauMotDePasse } = req.body;
+
+    if (!ancienMotDePasse || !nouveauMotDePasse) {
+      return res.status(400).json({
+        message: "L'ancien et le nouveau mot de passe sont obligatoires",
+      });
+    }
+
+    if (nouveauMotDePasse.length < 6) {
+      return res.status(400).json({
+        message: "Le nouveau mot de passe doit contenir au moins 6 caractères",
+      });
+    }
+
+    const result = await changePassword(
+      req.user.userId,
+      ancienMotDePasse,
+      nouveauMotDePasse
+    );
+
+    if (!result.success) {
+      return res.status(400).json({
+        message: result.message,
+      });
+    }
+
+    return res.status(200).json({
+      message: result.message,
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
 };

@@ -79,7 +79,7 @@ function NavSection({
 export function Sidebar() {
   const { currentUser, logout, tasks } = useApp();
   const navigate = useNavigate();
-  const todoCount = tasks.filter((t) => t.status === "todo").length;
+  const todoCount = tasks.filter((t) => t.status === "A_faire").length;
 
   if (!currentUser) return null;
 

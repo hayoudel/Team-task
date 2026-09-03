@@ -6,7 +6,6 @@ import { useAppContext } from "../context/AppContext";
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/projects", label: "Mes projets", icon: FolderKanban },
-  { to: "/tasks", label: "Mes tâches", icon: CheckSquare },
   { to: "/profile", label: "Mon profil", icon: User },
 ];
 

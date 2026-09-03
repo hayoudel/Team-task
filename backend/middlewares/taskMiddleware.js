@@ -96,3 +96,38 @@ export const canCreateTask = async (req, res, next) => {
 
   }
 };
+
+export const canUpdateTaskStatus = async (req, res, next) => {
+  try {
+    const task = await Task.findByPk(req.params.id);
+
+    if (!task) {
+      return res.status(404).json({
+        message: "Tâche non trouvée"
+      });
+    }
+
+    // Le responsable de la tâche peut modifier son statut
+    if (task.responsable_id === req.user.userId) {
+      req.task = task;
+      return next();
+    }
+
+    // L'admin peut également modifier le statut
+    if (req.user.role === "admin") {
+      req.task = task;
+      return next();
+    }
+
+    return res.status(403).json({
+      message: "Vous ne pouvez modifier que le statut des tâches qui vous sont attribuées"
+    });
+
+  } catch (error) {
+
+    return res.status(500).json({
+      message: error.message
+    });
+
+  }
+};

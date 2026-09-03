@@ -7,7 +7,7 @@ import {
   Trash2,
   UserMinus,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { Avatar, Button, Card, ProgressBar, ProjectStatusBadge, TaskStatusBadge } from "../components/ui/Basics";
@@ -27,8 +27,9 @@ const tabs = [
 export function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { projects, users, tasks, roles, updateProject, deleteProject, addMember, updateMemberRole, removeMember, addTask, updateTask, deleteTask } = useApp();
+ const { projects, users, tasks, getTasksByProject, roles, updateProject, deleteProject, addMember, updateMemberRole, removeMember, addTask, updateTask, deleteTask } = useApp();
   const [tab, setTab] = useState("overview");
+
 
   const project = projects.find((p) => p.id === id);
 
@@ -51,13 +52,13 @@ const [memberForm, setMemberForm] = useState({
   const [taskForm, setTaskForm] = useState({
     name: "",
     description: "",
-    status: "todo" as TaskStatus,
+    status: "A_faire" as TaskStatus,
     startDate: "",
     dueDate: "",
     assigneeId: "",
   });
 
-  const projectTasks = useMemo(() => tasks.filter((t) => t.projectId === id), [tasks, id]);
+ const [projectTasks, setProjectTasks] = useState<Task[]>([]);
   const members = project?.members ?? [];
   const memberUsers = members.map((m) => ({ ...m, user: users.find((u) => u.id === m.userId) })).filter((m) => m.user);
   const nonMembers = users.filter((u) => !members.some((m) => m.userId === u.id));
@@ -89,7 +90,7 @@ const [memberForm, setMemberForm] = useState({
 
   const openTaskCreate = () => {
     setEditTask(null);
-    setTaskForm({ name: "", description: "", status: "todo", startDate: "", dueDate: "", assigneeId: "" });
+    setTaskForm({ name: "", description: "", status: "A_faire", startDate: "", dueDate: "", assigneeId: "" });
     setShowTaskForm(true);
   };
   const openTaskEdit = (t: Task) => {
@@ -115,15 +116,35 @@ const submitTask = async () => {
       });
     }
 
-    setShowTaskForm(false);
+    // Recharger les tâches du projet
+    const updatedTasks = await getTasksByProject(project.id);
+    setProjectTasks(updatedTasks);
 
+    setShowTaskForm(false);
   } catch (error) {
     console.error("Erreur tâche :", error);
   }
 };
+useEffect(() => {
+  if (!id) return;
 
-  const doneCount = projectTasks.filter((t) => t.status === "done").length;
-  const progress = projectProgress(tasks, project.id);
+  const loadProjectTasks = async () => {
+    try {
+      const tasks = await getTasksByProject(id);
+      setProjectTasks(tasks);
+    } catch (error) {
+      console.error(
+        "Erreur chargement des tâches du projet :",
+        error
+      );
+    }
+  };
+
+  loadProjectTasks();
+}, [id]);
+
+  const doneCount = projectTasks.filter((t) => t.status === "Terminée").length;
+ const progress = projectProgress(projectTasks, project.id);
 
   return (
     <div className="space-y-6">
@@ -288,7 +309,7 @@ const submitTask = async () => {
                 value={taskStatusFilter}
                 onChange={setTaskStatusFilter}
                 placeholder="Tous les statuts"
-                options={(["todo", "in_progress", "done"] as TaskStatus[]).map((s) => ({ value: s, label: taskStatusLabel(s) }))}
+                options={(["A_faire", "En_cours", "Terminée"] as TaskStatus[]).map((s) => ({ value: s, label: taskStatusLabel(s) }))}
               />
             </div>
             <Button size="sm" icon={<Plus className="w-4 h-4" />} onClick={openTaskCreate}>
@@ -337,18 +358,18 @@ const submitTask = async () => {
       {tab === "kanban" && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <KanbanColumn title="À faire" colorClass="bg-slate-400" status="todo" tasks={projectTasks} users={users} onAdd={openTaskCreate} />
-            <KanbanColumn title="En cours" colorClass="bg-amber-500" status="in_progress" tasks={projectTasks} users={users} onAdd={openTaskCreate} />
-            <KanbanColumn title="Terminé" colorClass="bg-emerald-500" status="done" tasks={projectTasks} users={users} onAdd={openTaskCreate} />
+            <KanbanColumn title="À faire" colorClass="bg-slate-400" status="A_faire" tasks={projectTasks} users={users} onAdd={openTaskCreate} />
+            <KanbanColumn title="En cours" colorClass="bg-amber-500" status="En_cours" tasks={projectTasks} users={users} onAdd={openTaskCreate} />
+            <KanbanColumn title="Terminé" colorClass="bg-emerald-500" status="Terminée" tasks={projectTasks} users={users} onAdd={openTaskCreate} />
           </div>
           <Card className="p-5">
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <p className="text-xl font-black text-slate-900">{projectTasks.filter((t) => t.status === "todo").length}</p>
+                <p className="text-xl font-black text-slate-900">{projectTasks.filter((t) => t.status === "A_faire").length}</p>
                 <p className="text-xs text-slate-500">À faire</p>
               </div>
               <div>
-                <p className="text-xl font-black text-slate-900">{projectTasks.filter((t) => t.status === "in_progress").length}</p>
+                <p className="text-xl font-black text-slate-900">{projectTasks.filter((t) => t.status === "En_cours").length}</p>
                 <p className="text-xs text-slate-500">En cours</p>
               </div>
               <div>
@@ -519,7 +540,7 @@ const submitTask = async () => {
             label="Statut"
             value={taskForm.status}
             onChange={(e) => setTaskForm({ ...taskForm, status: e.target.value as TaskStatus })}
-            options={(["todo", "in_progress", "done"] as TaskStatus[]).map((s) => ({ value: s, label: taskStatusLabel(s) }))}
+            options={(["A_faire", "En_cours", "Terminée"] as TaskStatus[]).map((s) => ({ value: s, label: taskStatusLabel(s) }))}
           />
           <Select
             label="Assigné à"
@@ -541,8 +562,12 @@ const submitTask = async () => {
     if (!deleteTaskTarget) return;
 
     try {
-      await deleteTask(deleteTaskTarget.id);
-      setDeleteTaskTarget(null);
+     await deleteTask(deleteTaskTarget.id);
+
+const updatedTasks = await getTasksByProject(project.id);
+setProjectTasks(updatedTasks);
+
+setDeleteTaskTarget(null);
     } catch (error) {
       console.error("Erreur suppression tâche :", error);
     }

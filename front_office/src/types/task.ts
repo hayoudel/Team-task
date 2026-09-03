@@ -1,4 +1,12 @@
 export interface TaskResponsable {
+  id: number;
+  nom: string;
+  prenom: string;
+  email: string;
+  numero_telephone: string;
+}
+export interface TaskCreated{
+  id: number;
   nom: string;
   prenom: string;
   email: string;
@@ -9,13 +17,14 @@ export interface Task {
   id: number;
   nom: string;
   description: string;
-  statut: string; // libre côté back : "A faire" par défaut, pas d'enum strict
+  statut: string; 
   date_debut: string;
   date_fin: string;
   project_id: number;
   created_by: number;
+  creator?: TaskCreated;
   responsable_id: number;
-  responsable?: TaskResponsable; // présent seulement via getTasksByProject
+  responsable?: TaskResponsable; 
 }
 
 export interface CreateTaskPayload {

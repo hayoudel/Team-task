@@ -48,6 +48,7 @@ interface AppContextValue {
   fetchProjectTasks: (projectId: string | number) => Promise<void>;
   createTask: (payload: CreateTaskPayload) => Promise<boolean>;
   updateTask: (id: number, payload: UpdateTaskPayload) => Promise<boolean>;
+  updateTaskStatus: (id: number, statut: string) => Promise<boolean>;
   deleteTask: (id: number) => Promise<boolean>;
   taskActionError: string | null;
 }
@@ -230,6 +231,40 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return false;
     }
   }, []);
+  const updateTaskStatus = useCallback(
+  async (id: number, statut: string) => {
+    setTaskActionError(null);
+
+    try {
+      const data = await apiFetch<UpdateTaskResponse>(
+        `/task/${id}/status`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ statut }),
+        }
+      );
+
+      setProjectTasks((prev) =>
+        prev.map((task) =>
+          task.id === id
+            ? { ...task, ...data.task }
+            : task
+        )
+      );
+
+      return true;
+    } catch (err) {
+      setTaskActionError(
+        err instanceof ApiError
+          ? err.message
+          : "Impossible de modifier le statut de la tâche."
+      );
+
+      return false;
+    }
+  },
+  []
+);
 
   const deleteTask = useCallback(async (id: number) => {
     setTaskActionError(null);
@@ -269,6 +304,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     fetchProjectTasks,
     createTask,
     updateTask,
+    updateTaskStatus,
     deleteTask,
     taskActionError,
   };

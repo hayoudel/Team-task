@@ -90,4 +90,39 @@ const token = jwt.sign(payload, secretKey, { expiresIn: '2h' });
   };
    
 };
+export const changePassword = async (id,ancienMotDePasse,nouveauMotDePasse) => {
+  const user = await User.findByPk(id);
 
+  if (!user) {
+    return {
+      success: false,
+      message: "Utilisateur non trouvé",
+    };
+  }
+
+  const passwordCorrect = await bcrypt.compare(
+    ancienMotDePasse,
+    user.motDePasse
+  );
+
+  if (!passwordCorrect) {
+    return {
+      success: false,
+      message: "L'ancien mot de passe est incorrect",
+    };
+  }
+
+  const nouveauMotDePasseHash = await bcrypt.hash(
+    nouveauMotDePasse,
+    10
+  );
+
+  await user.update({
+    motDePasse: nouveauMotDePasseHash,
+  });
+
+  return {
+    success: true,
+    message: "Mot de passe modifié avec succès",
+  };
+};

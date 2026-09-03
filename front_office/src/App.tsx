@@ -30,8 +30,6 @@ function AppRoutes() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="projects" element={<Projects />} />
         <Route path="projects/:projectId" element={<ProjectDetail />} />
-        <Route path="tasks" element={<Tasks />} />
-        <Route path="tasks/:taskId" element={<TaskDetail />} />
         <Route path="profile" element={<Profile />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>

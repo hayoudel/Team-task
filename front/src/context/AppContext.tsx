@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState, useEffect, type ReactNode } from "react";
 
-import type { Project, ProjectMember, RoleDef, Task, User,CreateUserData } from "../types";
+import type { Project, ProjectMember, RoleDef, Task, User,CreateUserData,CreateProjectData } from "../types";
 
 
 
@@ -16,7 +16,7 @@ addUser: (u: CreateUserData) => Promise<void>;
 deleteUser: (id: string) => Promise<void>;
 
   projects: Project[];
-  addProject: (p: Project) => Promise<void>;
+ addProject: (project: CreateProjectData) => Promise<string>;
   updateProject: (id: string, p: Partial<Project>) => Promise<void>;
   deleteProject: (id: string) => void;
   addMember: (projectId: string, member: ProjectMember) => Promise<void>;
@@ -25,6 +25,7 @@ deleteUser: (id: string) => Promise<void>;
 
   tasks: Task[];
   addTask: (t: Omit<Task, "id" | "createdAt" | "creatorId">) => void;
+  getTasksByProject: (projectId: string) => Promise<Task[]>;
   updateTask: (id: string, t: Partial<Task>) => void;
   deleteTask: (id: string) => void;
 
@@ -402,11 +403,11 @@ const addProject: AppContextValue["addProject"] = async (p) => {
       },
       credentials: "include",
       body: JSON.stringify({
-          nom: p.name,
-          description: p.description,
-          statut: p.status,
-          date_debut: p.startDate,
-          date_fin: p.endDate,
+        nom: p.name,
+        description: p.description,
+        statut: p.status,
+        date_debut: p.startDate,
+        date_fin: p.endDate,
       }),
     });
 
@@ -414,7 +415,7 @@ const addProject: AppContextValue["addProject"] = async (p) => {
 
     if (!response.ok) {
       console.error("Erreur création project :", data.message);
-      return;
+      throw new Error(data.message || "Erreur lors de la création du projet");
     }
 
     const newProject: Project = {
@@ -431,8 +432,10 @@ const addProject: AppContextValue["addProject"] = async (p) => {
 
     setProjects((prev) => [...prev, newProject]);
 
+    return newProject.id;
   } catch (error) {
     console.error("Erreur création du project :", error);
+    throw error;
   }
 };
 
@@ -732,6 +735,52 @@ useEffect(() => {
 
 }, [currentUser]);
 
+
+const getTasksByProject: AppContextValue["getTasksByProject"] = async (
+  projectId
+) => {
+  try {
+    const response = await fetch(
+      `http://localhost:3000/api/task/project/${projectId}`,
+      {
+        method: "GET",
+        credentials: "include",
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Erreur récupération des tâches du projet"
+      );
+    }
+
+    const formattedTasks: Task[] = data.tasks.map((task: any) => ({
+      id: String(task.id),
+      name: task.nom,
+      description: task.description,
+      projectId: String(task.project_id),
+      status: task.statut,
+      startDate: task.date_debut,
+      dueDate: task.date_fin,
+      assigneeId: String(task.responsable_id),
+      creatorId: String(task.created_by),
+      createdAt: task.createdAt,
+    }));
+
+    return formattedTasks;
+
+  } catch (error) {
+    console.error(
+      "Erreur récupération tâches du projet :",
+      error
+    );
+
+    throw error;
+  }
+};
+
 const addTask: AppContextValue["addTask"] = async (t) => {
   try {
     const response = await fetch(
@@ -1001,11 +1050,13 @@ const addTask: AppContextValue["addTask"] = async (t) => {
       removeMember,
       tasks,
       addTask,
+      getTasksByProject,
       updateTask,
       deleteTask,
       roles,
       addRole,
       updateRole,
+      isLoadingAuth,
       deleteRole,
     }),
    

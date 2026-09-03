@@ -12,11 +12,12 @@ import type { ProjectStatus } from "../types";
 const emptyForm = { name: "", description: "", status: "active" as ProjectStatus, startDate: "", endDate: "" };
 
 export function Projects() {
-  const { projects, users, tasks, addProject } = useApp();
+  const { projects, users, tasks,addProject } = useApp();
   const navigate = useNavigate();
   const [view, setView] = useState<"cards" | "list">("cards");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
+ 
 
   const counts = {
     active: projects.filter((p) => p.status === "active").length,

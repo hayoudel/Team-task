@@ -25,7 +25,7 @@ export function Profile() {
 
   const projectsCreated = projects.filter((p) => p.createdBy === currentUser.id).length;
   const tasksCreated = tasks.filter((t) => t.creatorId === currentUser.id).length;
-  const tasksInProgress = tasks.filter((t) => t.assigneeId === currentUser.id && t.status === "in_progress").length;
+  const tasksInProgress = tasks.filter((t) => t.assigneeId === currentUser.id && t.status === "Encours").length;
 
   const save = () => {
     updateUser(currentUser.id, form);

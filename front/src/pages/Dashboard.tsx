@@ -11,9 +11,9 @@ export function Dashboard() {
   const navigate = useNavigate();
 
   const overdueTasks = useMemo(() => tasks.filter(isOverdue), [tasks]);
-  const todoCount = tasks.filter((t) => t.status === "todo").length;
-  const inProgressCount = tasks.filter((t) => t.status === "in_progress").length;
-  const doneCount = tasks.filter((t) => t.status === "done").length;
+  const todoCount = tasks.filter((t) => t.status === "A_faire").length;
+  const inProgressCount = tasks.filter((t) => t.status === "En_cours").length;
+  const doneCount = tasks.filter((t) => t.status === "Terminée").length;
   const activeProjects = projects.filter((p) => p.status === "active");
 
   const completionRate = tasks.length ? Math.round((doneCount / tasks.length) * 100) : 0;

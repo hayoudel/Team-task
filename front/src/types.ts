@@ -1,5 +1,5 @@
 export type UserRole = "admin" | "chef_projet" | "user";
-export type TaskStatus = "todo" | "in_progress" | "done";
+export type TaskStatus = "A_faire" | "En_cours" | "Terminée";
 export type ProjectStatus = "active" | "on_hold" | "completed" | "cancelled";
 
 export interface User {
@@ -19,7 +19,13 @@ export interface CreateUserData  {
   password: string;
   role: UserRole;
 };
-
+export type CreateProjectData = {
+  name: string;
+  description: string;
+  status: ProjectStatus;
+  startDate: string;
+  endDate: string;
+};
 export interface Project {
   id: string;
   name: string;
