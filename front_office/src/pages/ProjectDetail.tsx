@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import { Eye, Pencil, Trash2, Plus, Info, AlertTriangle, RefreshCw } from "lucide-react";
+import { useParams, Link,useNavigate } from "react-router-dom";
+import { Eye, Pencil, Trash2, Plus, Info, AlertTriangle, RefreshCw,MessageCircle } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 import { CHEF_DE_PROJET_ROLE_ID } from "../types/projectMember";
 import Card from "../components/ui/Card";
@@ -27,6 +27,7 @@ function formatDate(iso: string) {
 
 export default function ProjectDetail() {
   const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
   const {
     user,
     currentProject,
@@ -159,6 +160,13 @@ async function handleTaskStatusChange(taskId: number, statut: string) {
                 ))}
               </div>
             )}
+             <button
+        onClick={() => navigate(`/projects/${projectId}/messages`)}
+        className="fixed bottom-6 right-6 bg-orange-500 hover:bg-orange-600 text-white rounded-full p-4 shadow-lg transition-transform hover:scale-105"
+        title="Messages du projet"
+      >
+        <MessageCircle className="w-5 h-5" />
+      </button>
           </div>
         </Card>
       )}
@@ -206,6 +214,13 @@ async function handleTaskStatusChange(taskId: number, statut: string) {
               )}
             </Card>
           )}
+           <button
+        onClick={() => navigate(`/projects/${projectId}/messages`)}
+        className="fixed bottom-6 right-6 bg-orange-500 hover:bg-orange-600 text-white rounded-full p-4 shadow-lg transition-transform hover:scale-105"
+        title="Messages du projet"
+      >
+        <MessageCircle className="w-5 h-5" />
+      </button>
         </div>
       )}
 
@@ -312,7 +327,15 @@ async function handleTaskStatusChange(taskId: number, statut: string) {
     onClose={() => setSelectedTask(null)}
   />
 )}
+ <button
+        onClick={() => navigate(`/projects/${projectId}/messages`)}
+        className="fixed bottom-6 right-6 bg-orange-500 hover:bg-orange-600 text-white rounded-full p-4 shadow-lg transition-transform hover:scale-105"
+        title="Messages du projet"
+      >
+        <MessageCircle className="w-5 h-5" />
+      </button>
         </div>
+        
       )}
 
  {tab === "Suivi" && (
@@ -525,8 +548,15 @@ async function handleTaskStatusChange(taskId: number, statut: string) {
 
       </div>
     )}
-
+      <button
+        onClick={() => navigate(`/projects/${projectId}/messages`)}
+        className="fixed bottom-6 right-6 bg-orange-500 hover:bg-orange-600 text-white rounded-full p-4 shadow-lg transition-transform hover:scale-105"
+        title="Messages du projet"
+      >
+        <MessageCircle className="w-5 h-5" />
+      </button>
   </div>
+  
 )}
 
       {createModalOpen && currentProject && user && (

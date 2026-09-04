@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AppProvider, useApp } from "./context/AppContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import { AdminLayout } from "./components/layout/AdminLayout";
 import { Login } from "./pages/Login";
@@ -13,46 +14,29 @@ import { Roles } from "./pages/Roles";
 import { Profile } from "./pages/Profile";
 
 function AppRoutes() {
-  const { currentUser, isLoadingAuth } = useApp();
-
-  // On attend que /me ait terminé
-  if (isLoadingAuth) {
-    return <div>Chargement...</div>;
-  }
+  const { currentUser } = useApp();
 
   return (
     <Routes>
       <Route
         path="/"
-        element={
-          currentUser
-            ? <Navigate to="/admin/dashboard" replace />
-            : <Navigate to="/login" replace />
-        }
+        element={<Navigate to={currentUser ? "/admin/dashboard" : "/login"} replace />}
       />
 
       <Route
         path="/login"
-        element={
-          currentUser
-            ? <Navigate to="/admin/dashboard" replace />
-            : <Login />
-        }
+        element={currentUser ? <Navigate to="/admin/dashboard" replace /> : <Login />}
       />
 
       <Route
         path="/admin"
         element={
-          currentUser
-            ? <AdminLayout />
-            : <Navigate to="/login" replace />
+          <ProtectedRoute>
+            <AdminLayout />
+          </ProtectedRoute>
         }
       >
-        <Route
-          index
-          element={<Navigate to="/admin/dashboard" replace />}
-        />
-
+        <Route index element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="users" element={<Users />} />
         <Route path="projects" element={<Projects />} />
@@ -63,10 +47,7 @@ function AppRoutes() {
         <Route path="profile" element={<Profile />} />
       </Route>
 
-      <Route
-        path="*"
-        element={<Navigate to="/login" replace />}
-      />
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }

@@ -20,6 +20,7 @@ export const getProjectById = async (id) => {
 
   return projectUser;
 };
+
 export const getProjectUserById = async (userId) => {
   const projectUsers = await ProjectUser.findAll({
     where: {
@@ -34,6 +35,8 @@ export const getProjectUserById = async (userId) => {
 
 return projectUsers.map((projectUser) => projectUser.project)
 };
+
+
 export const updateProjectUser = async (id, projectUserData) => {
   const projectUser = await ProjectUser.findByPk(id);
 
@@ -96,6 +99,7 @@ export const getProjectMembers = async (projectId) => {
   }))
 };
 };
+
 export const addMembersToProject = async (projectId, members) => {
 
   const project = await Project.findByPk(projectId);

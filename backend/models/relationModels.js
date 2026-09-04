@@ -3,7 +3,7 @@ import Project from "../models/projetModels.js";
 import User from "../models/userModels.js";
 import Role from "../models/roleModels.js";
 import Task from "../models/taskModels.js";
-
+import Message from "../models/messageModels.js";
 
 User.hasMany(ProjectUser, {
   foreignKey: "users_id",
@@ -64,4 +64,35 @@ Task.belongsTo(User, {
   foreignKey: "responsable_id",
   as: "responsable",
   onDelete: "RESTRICT"
+});
+
+
+Project.hasMany(Message, {
+  foreignKey: "project_id",
+});
+
+Message.belongsTo(Project, {
+  foreignKey: "project_id",
+  onDelete: "CASCADE",
+});
+
+User.hasMany(Message, {
+  foreignKey: "sender_id",
+  as: "messagesSent",
+});
+
+Message.belongsTo(User, {
+  foreignKey: "sender_id",
+  as: "sender",
+  onDelete: "CASCADE",
+});
+
+Message.belongsTo(Message, {
+  foreignKey: "reply_to_id",
+  as: "messageRepondu",
+});
+
+Message.hasMany(Message, {
+  foreignKey: "reply_to_id",
+  as: "reponses",
 });

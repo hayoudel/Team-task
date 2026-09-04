@@ -2,9 +2,6 @@ import {  getAllProjectUsers, getProjectById,getProjectUserById, updateProjectUs
 } from "../services/projectUserServices.js";
 
 
-
-
-
 export const getAllProjectUsersController = async (req, res) => {
   try {
     const projectUsers = await getAllProjectUsers();
@@ -43,6 +40,8 @@ export const getProjectByIdController = async (req, res) => {
     });
   }
 };
+
+
 export const getProjectUserByIdController = async (req, res) => {
   try {
     const projects = await getProjectUserById(req.params.userId);
@@ -150,7 +149,6 @@ export const addMembersToProjectController = async (req, res) => {
   try {
 
     const { project_id, members } = req.body;
-       console.log("BODY :", req.body);
 
     if (!project_id || !members || !Array.isArray(members)) {
       return res.status(400).json({

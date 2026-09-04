@@ -11,6 +11,7 @@ import {
   UpdateTaskResponse,
 } from "../types/task";
 import { ProjectMember, GetProjectMembersResponse } from "../types/projectMember";
+import { ChatMessage } from "../types/message";
 import { useEffect } from "react";
 
 interface AppContextValue {
@@ -51,6 +52,12 @@ interface AppContextValue {
   updateTaskStatus: (id: number, statut: string) => Promise<boolean>;
   deleteTask: (id: number) => Promise<boolean>;
   taskActionError: string | null;
+
+  messages: ChatMessage[];
+messagesLoading: boolean;
+messagesError: string | null;
+fetchMessages: (projectId: string | number) => Promise<void>;
+addLocalMessage: (message: ChatMessage) => void; // pour insérer un message reçu par socket
 }
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
@@ -77,6 +84,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [tasksLoading, setTasksLoading] = useState(false);
   const [tasksError, setTasksError] = useState<string | null>(null);
   const [taskActionError, setTaskActionError] = useState<string | null>(null);
+
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+const [messagesLoading, setMessagesLoading] = useState(false);
+const [messagesError, setMessagesError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -277,6 +288,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return false;
     }
   }, []);
+const fetchMessages = useCallback(async (projectId: string | number) => {
+  setMessagesLoading(true);
+  setMessagesError(null);
+
+  try {
+    const data = await apiFetch<ChatMessage[]>(
+      `/message/project/${projectId}`
+    );
+
+    setMessages(data);
+  } catch (err) {
+    setMessagesError(
+      err instanceof ApiError
+        ? err.message
+        : "Impossible de charger les messages."
+    );
+  } finally {
+    setMessagesLoading(false);
+  }
+}, []);
+
+const addLocalMessage = useCallback((message: ChatMessage) => {
+  setMessages((prev) => [...prev, message]);
+}, []);
 
   const value: AppContextValue = {
     user,
@@ -307,6 +342,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateTaskStatus,
     deleteTask,
     taskActionError,
+    messages,
+messagesLoading,
+messagesError,
+fetchMessages,
+addLocalMessage,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

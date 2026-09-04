@@ -8,6 +8,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
+import ProjectMessages from "./pages/ProjectMessages";
 import Tasks from "./pages/Tasks";
 import TaskDetail from "./pages/TaskDetail";
 import Profile from "./pages/Profile";
@@ -30,6 +31,7 @@ function AppRoutes() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="projects" element={<Projects />} />
         <Route path="projects/:projectId" element={<ProjectDetail />} />
+        <Route path="projects/:projectId/messages" element={<ProjectMessages />} />
         <Route path="profile" element={<Profile />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
